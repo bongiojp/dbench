@@ -23,6 +23,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <netdb.h>
+#include <sys/socket.h>
 
 #define discard_const(ptr) ((void *)((intptr_t)(ptr)))
 
@@ -390,6 +392,8 @@ struct nfsio *nfsio_connect(const char *server, const char *export, const char *
 	mountres3 *mountres;
 	fhandle3 *fh;
         struct sockaddr_in sin;
+        struct addrinfo *res;
+        struct addrinfo hints;
 	int ret;
 
 	nfsio = malloc(sizeof(struct nfsio));
@@ -409,14 +413,23 @@ struct nfsio *nfsio_connect(const char *server, const char *export, const char *
 	 * bind to these ports, so the server must be in "insecure"
 	 * mode.
 	 */
-	memset(&sin, 0, sizeof(sin));
-	sin.sin_port = 0;
-	sin.sin_family = PF_INET;
-	if (inet_aton(server, &sin.sin_addr) == 0) {
-		fprintf(stderr, "Invalid address '%s'\n", server);
-		nfsio_disconnect(nfsio);
-		return NULL;
-	}
+        memset (&hints, 0, sizeof (hints));
+        hints.ai_family = PF_UNSPEC;
+        hints.ai_socktype = SOCK_STREAM;
+        hints.ai_flags |= AI_CANONNAME;
+
+        ret = getaddrinfo (server, NULL, &hints, &res);
+        if (ret != 0) {
+          fprintf(stderr, "Failed to get address info ... getaddrinfo: %s\n",
+                  gai_strerror(ret));
+          return NULL;
+        }
+
+        memset(&sin, 0, sizeof(sin));
+        sin.sin_port = 0;
+        sin.sin_family = PF_INET;
+        sin.sin_addr = ((struct sockaddr_in *) res->ai_addr)->sin_addr;
+        freeaddrinfo(res);
 
 	if (!strcmp(protocol, "tcp")) {
 		nfsio->s = RPC_ANYSOCK;
@@ -469,14 +482,23 @@ struct nfsio *nfsio_connect(const char *server, const char *export, const char *
 	 * bind to these ports, so the server must be in "insecure"
 	 * mode.
 	 */
-	memset(&sin, 0, sizeof(sin));
-	sin.sin_port = 0;
-	sin.sin_family = PF_INET;
-	if (inet_aton(server, &sin.sin_addr) == 0) {
-		fprintf(stderr, "Invalid address '%s'\n", server);
-		nfsio_disconnect(nfsio);
-		return NULL;
-	}
+        memset (&hints, 0, sizeof (hints));
+        hints.ai_family = PF_UNSPEC;
+        hints.ai_socktype = SOCK_STREAM;
+        hints.ai_flags |= AI_CANONNAME;
+
+        ret = getaddrinfo (server, NULL, &hints, &res);
+        if (ret != 0) {
+          fprintf(stderr, "Failed to get address info ... getaddrinfo: %s\n",
+                  gai_strerror(ret));
+          return NULL;
+        }
+
+        memset(&sin, 0, sizeof(sin));
+        sin.sin_port = 0;
+        sin.sin_family = PF_INET;
+        sin.sin_addr = ((struct sockaddr_in *) res->ai_addr)->sin_addr;
+        freeaddrinfo(res);
 
 	if (!strcmp(protocol, "tcp")) {
 		nfsio->s = RPC_ANYSOCK;
