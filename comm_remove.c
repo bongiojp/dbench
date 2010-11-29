@@ -13,18 +13,7 @@
 #include "mount.h"
 #include "libnfs.h"
 
-struct nfsio *nfs_connect(char *hostname, char *directory) {
-  int xid = rand();
-  struct nfsio * nfsio = NULL;
-
-  nfsio = nfsio_connect(hostname, directory, "tcp", xid, 16);
-  if (nfsio == NULL) {
-    printf("Error: Could not connect to server:%s directory:%s\n",
-           hostname, directory);
-    return NULL;
-  }
-  return nfsio;
-}
+#include "comm.h"
 
 int main(int argc, char **argv) {
   char *hostname, *directory, *filename;

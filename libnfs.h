@@ -1,3 +1,5 @@
+#ifndef _LIBNFS_H_
+#define _LIBNFS_H_
 
 struct nfsio *nfsio_connect(const char *server, const char *export, const char *protocol, int initial_xid, int xid_stride);
 void nfsio_disconnect(struct nfsio *nfsio);
@@ -24,3 +26,5 @@ nfsstat3 nfsio_readdirplus(struct nfsio *nfsio, const char *name, nfs3_dirent_cb
 nfsstat3 nfsio_readdir(struct nfsio *nfsio, const char *name);
 
 const char *nfs_error(int error);
+
+#endif
