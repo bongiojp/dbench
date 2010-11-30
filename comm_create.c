@@ -21,7 +21,10 @@ int main(int argc, char **argv) {
   struct nfsio * nfsio;
   
   /* hostname directory pathname */
-  if (argc < 3) {
+  if (argc < 4) {
+    printf("Not enough arguments to %s\n", argv[0]);
+    printf("Usage: %s hostname exportdir filename\n", argv[0]);
+    exit(1);
   }
 
   hostname = argv[1];

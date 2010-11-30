@@ -17,19 +17,27 @@
 
 int main(int argc, char **argv) {
   char *hostname, *directory, *filename;
+  char *inputfile;
   nfsstat3 nfs_status;
   struct nfsio * nfsio;
-  
+  unsigned long long offset;
+  int len, stable, fd;
+  int count;
+
   /* hostname directory pathname */
-  if (argc < 4) {
+  if (argc != 8) {
     printf("Not enough arguments to %s\n", argv[0]);
-    printf("Usage: %s hostname exportdir filename\n", argv[0]);
+    printf("Usage: %s hostname exportdir filename offset length stable inputfile\n", argv[0]);
     exit(1);
   }
 
   hostname = argv[1];
   directory = argv[2];
   filename = argv[3];
+  offset = atoll(argv[4]);
+  len = atoi(argv[5]);
+  stable = atoi(argv[6]);
+  inputfile = argv[7];  
 
   /* Connect */
   nfsio = nfs_connect(hostname, directory);
@@ -38,9 +46,21 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  nfs_status = nfsio_remove(nfsio, filename);
+  /* prepare buffer to write to remote file */
+  char buf[len];
+  fd = open(inputfile, "r");
+  count = read(fd, buf, len);
+  close(fd);
+  if (count != len) {
+    printf("FAIL: Could not read %d bytes from the file %s at offset %lld\n",
+           len, inputfile, offset);
+    exit(1);
+  }
+
+  /* write */
+  nfs_status = nfsio_write(nfsio, filename, buf, offset, len, stable);
   if (nfs_status != NFS3_OK) {
-    printf ("FAIL: Could not remove file: %d\n", nfs_status);
+    printf ("FAIL: Could not write to file: %d\n", nfs_status);
       print_nfs_status(nfs_status);
     return -1;
   }

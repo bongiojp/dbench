@@ -24,13 +24,16 @@ SRV_OBJS = util.o tbench_srv.o socklib.o
 
 all: dbench doc comm
 
-comm: comm_create comm_remove
+comm: comm_create comm_remove comm_write
 
 comm_create: $(DB_OBJS) comm.h
 	$(CC) -o $@ comm_create.c $(LIBS) $(LIBNFS_OBJ)
 
 comm_remove: $(DB_OBJS) comm.h
 	$(CC) -o $@ comm_remove.c $(LIBS) $(LIBNFS_OBJ)
+
+comm_write: $(DB_OBJS) comm.h
+	$(CC) -o $@ comm_write.c $(LIBS) $(LIBNFS_OBJ)
 
 dbench: $(DB_OBJS)
 	$(CC) -o $@ $(DB_OBJS) $(LIBS)
